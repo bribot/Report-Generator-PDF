@@ -9,8 +9,9 @@ from fpdf import FPDF
 from datetime import datetime, timedelta
 import time
 import configparser
-import matplotlib.pyplot as plt
-from pylab import title, figure, xlabel,ylabel,xticks,bar,legend,axis,savefig
+import sys
+#import matplotlib.pyplot as plt
+#from pylab import title, figure, xlabel,ylabel,xticks,bar,legend,axis,savefig
 
 
 spacing = 10
@@ -20,12 +21,14 @@ pageW = 200
 pageH = 220
 marginX = 10
 marginY = 40
-filename = "visionSystemVars.txt"
+varsFilename = "visionSystemVars.txt"
+configFile = "config.ini"
+outputPath = "./"
 
 
 def getVarsFromVisionSystem(var):
     config = configparser.ConfigParser()
-    config.read(filename)
+    config.read(varsFilename)
     configVar = config.get("vision", var)
     return configVar
 
@@ -50,8 +53,8 @@ class PDF(FPDF):
     def header(self):
         # Logo
         
-        self.image("logoL.png", pageW/20, 0, pageW/5)
-        self.image("logoR.png", 17*pageW/20, 0, pageW/5)
+        self.image("logoL.png", pageW/20, 6, 0,28)
+        self.image("logoR.png", 17*pageW/20, 6, 0,28)
         # Arial bold 15
         self.set_font('Arial', '', 22)
         # Move to the right
@@ -72,7 +75,16 @@ class PDF(FPDF):
         # Page number
         self.cell(0, 10, 'Pagina ' + str(self.page_no()) + '/{nb}', 0, 0, 'C')
         
+        #reportGen.py varsFilename
 def main():
+    # global configFile
+    # configFile = sys.argv[1]
+    
+    config = configparser.ConfigParser()
+    config.read(configFile)
+    outputPath = config.get("config", "output")
+    varsFilename = config.get("config", "varsFile")
+    
     #Vars from txt
     nLote = getVarsFromVisionSystem("nLote")
     nameLote = getVarsFromVisionSystem("nameLote")
@@ -145,7 +157,9 @@ def main():
     
     
     #pdf.image("plot.png",x=20,w=180)
-    pdf.output('test1.pdf', 'F')
+    outputFilename = datetime.now().strftime("%Y%m%d_%H-%M-%S")
+    
+    pdf.output(outputPath + outputFilename + '.pdf', 'F')
 
 if __name__ == "__main__":
     main()
