@@ -1,0 +1,10 @@
+[vision]
+nLote: 1
+nameLote: test report APAAQ
+model: Vial
+userI: start user
+userF: final user
+tProduction: 8:30:20
+nInspection: 1000
+inspOK: 900
+inspNOK: 100
