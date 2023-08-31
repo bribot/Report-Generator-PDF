@@ -10,8 +10,6 @@ from datetime import datetime, timedelta
 import time
 import configparser
 import sys
-#import matplotlib.pyplot as plt
-#from pylab import title, figure, xlabel,ylabel,xticks,bar,legend,axis,savefig
 
 
 spacing = 10
@@ -21,7 +19,7 @@ pageW = 200
 pageH = 220
 marginX = 10
 marginY = 40
-varsFilename = "visionSystemVars.txt"
+varsFilename = "./visionSystemVars.ini"
 configFile = "config.ini"
 outputPath = "./"
 
@@ -79,7 +77,7 @@ class PDF(FPDF):
 def main():
     # global configFile
     # configFile = sys.argv[1]
-    
+    global varsFilename
     config = configparser.ConfigParser()
     config.read(configFile)
     outputPath = config.get("config", "output")
@@ -91,10 +89,13 @@ def main():
     model = getVarsFromVisionSystem("model")
     userI = getVarsFromVisionSystem("userI")
     userF = getVarsFromVisionSystem("userF")
-    tProduction = getVarsFromVisionSystem("tProduction")
+    # tProduction = getVarsFromVisionSystem("tProduction")
     nInspection = getVarsFromVisionSystem("nInspection")
     inspOK = getVarsFromVisionSystem("inspOk")
     inspNOK = getVarsFromVisionSystem("inspNOK")
+    startTime = getVarsFromVisionSystem("startTime")
+    stopTime = getVarsFromVisionSystem("stopTime")
+    
     
     # Instantiation of inherited class
     pdf = PDF(format="Letter")
@@ -114,7 +115,7 @@ def main():
     pdf.cell(tab,spacing,"Nombre de Receta: ",0,0)
     pdf.cell(0,spacing,str(model),0,1)
     
-    currentTime,startTime = timeSplit(tProduction)
+    #currentTime,startTime = timeSplit(tProduction)
     
     
     pdf.cell(tab,spacing,"Inicio de Lote:",0,0)
@@ -122,7 +123,7 @@ def main():
     
     
     pdf.cell(tab,spacing,"Final de Lote:",0,0)
-    pdf.cell(0,spacing,currentTime,0,1)
+    pdf.cell(0,spacing,stopTime,0,1)
     
     pdf.cell(tab,spacing,"Usuario Inicio:",0,0)
     pdf.cell(0,spacing,str(userI),0,1)
@@ -130,6 +131,9 @@ def main():
     pdf.cell(tab,spacing,"Usuario Final:",0,0)
     pdf.cell(0,spacing,str(userF),0,1)
     
+    startTime = datetime.strptime(startTime,"%H:%M:%S")
+    stopTime = datetime.strptime(stopTime,"%H:%M:%S")
+    tProduction = stopTime - startTime
     pdf.cell(tab,spacing,"Tiempo de Producción:",0,0)
     pdf.cell(0,spacing,str(tProduction) + " hrs",0,1)
     
@@ -147,13 +151,14 @@ def main():
     pdf.cell(60,spacing,str(nInspection),1,0,"L",0)
     pdf.cell(60,spacing,"",1,1,"L",0)
     
+    
     pdf.cell(60,spacing,"Total Aceptado (A)",1,0,"L",0)
     pdf.cell(60,spacing,str(inspOK),1,0,"L",0)
-    pdf.cell(60,spacing,str(100*float(inspOK)/float(nInspection))+ " %",1,1,"L",0)
+    pdf.cell(60,spacing,str(100*float(inspOK)/float(nInspection) if float(nInspection) != 0 else 0)+ " %",1,1,"L",0)
     
     pdf.cell(60,spacing,"Total Rechazado (R)",1,0,"L",0)
     pdf.cell(60,spacing,str(inspNOK),1,0,"L",0)
-    pdf.cell(60,spacing,str(100*float(inspNOK)/float(nInspection)) + " %",1,1,"L",0)
+    pdf.cell(60,spacing,str(100*float(inspOK)/float(nInspection) if float(nInspection) != 0 else 0) + " %",1,1,"L",0)
     
     
     #pdf.image("plot.png",x=20,w=180)
@@ -164,31 +169,3 @@ def main():
 if __name__ == "__main__":
     main()
 
-def graphGen():
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(9, 5))
-    fig.subplots_adjust(wspace=0)
-    nInspec = inspOK + inspNOK
-    inspData = [inspNOK, inspOK]
-    names = ["NOK" , "OK"]
-    
-    angle =  -90*inspNOK/100
-    ax1.pie(inspData,labels = names,colors=['indianred','skyblue'],autopct='%1.1f%%',startangle=angle)
-    
-    circle = plt.Circle( (0,0), 0.6, color='white')
-    p=plt.gcf()
-    ax1.add_patch(circle)
-    bottom = 1
-    width = 0.2
-    
-    for j, (height, label) in enumerate(reversed([*zip(measNOK, measurements)])):
-        height = height/inspNOK
-        bottom -= height
-        bc = ax2.bar(0, height, width, bottom=bottom, color='indianred', label=label,
-                     alpha=0.1 + 0.15 * j)
-        ax2.bar_label(bc, labels=[f"{height:.0%}"], label_type='center')
-        
-    ax2.set_title('Inspecciones NOK')
-    ax2.legend()
-    ax2.axis('off')
-    ax2.set_xlim(- 2.5 * width, 2.5 * width)
-    savefig("plot.png")
