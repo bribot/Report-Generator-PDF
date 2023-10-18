@@ -154,11 +154,13 @@ def main():
     
     pdf.cell(60,spacing,"Total Aceptado (A)",1,0,"L",0)
     pdf.cell(60,spacing,str(inspOK),1,0,"L",0)
-    pdf.cell(60,spacing,str(100*float(inspOK)/float(nInspection) if float(nInspection) != 0 else 0)+ " %",1,1,"L",0)
+    percent = 100*float(inspOK)/float(nInspection) if float(nInspection) != 0 else 0
+    pdf.cell(60,spacing, "{:.2f} %".format(percent),1,1,"L",0)
     
     pdf.cell(60,spacing,"Total Rechazado (R)",1,0,"L",0)
     pdf.cell(60,spacing,str(inspNOK),1,0,"L",0)
-    pdf.cell(60,spacing,str(100*float(inspOK)/float(nInspection) if float(nInspection) != 0 else 0) + " %",1,1,"L",0)
+    percent = 100*float(inspNOK)/float(nInspection) if float(nInspection) != 0 else 0
+    pdf.cell(60,spacing,"{:.2f} %".format(percent),1,1,"L",0)
     
     
     #pdf.image("plot.png",x=20,w=180)
